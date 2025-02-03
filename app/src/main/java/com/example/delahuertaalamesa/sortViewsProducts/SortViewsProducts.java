@@ -38,6 +38,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,9 +84,11 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
 
                 loadRecycler();
 
-                requestQueue = Volley.newRequestQueue(this);
-                JsonArrayRequest jsonArrayRequest = getProductFruits();
-                requestQueue.add(jsonArrayRequest);
+//                requestQueue = Volley.newRequestQueue(this);
+//                JsonArrayRequest jsonArrayRequest = getProductFruits();
+//                requestQueue.add(jsonArrayRequest);
+                getProductFruits();
+
                 break;
             }
             case "vegetables": {
@@ -287,56 +293,140 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
      *
      * @return
      */
-    private JsonArrayRequest getProductFruits() {
-        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(
-                Request.Method.GET,
-                "https://granped.es/huertamesa/products/ProductsFruits.php",
-                null,
-                response -> {
-                    if (response != null) {
-                        response.toString();
-                        try {
-                            int numContact = response.length();
-                            for (int i = 0; i < numContact; i++) {
-                                JSONObject product = response.getJSONObject(i);
+//    private JsonArrayRequest getProductFruits() {
+//        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(
+//                Request.Method.GET,
+////                "https://granped.es/huertamesa/products/ProductsFruits.php",
+//                "file:///products.json",
+//                null,
+//                response -> {
+//                    if (response != null) {
+//                        response.toString();
+//                        try {
+//                            int numContact = response.length();
+//                            for (int i = 0; i < numContact; i++) {
+//                                JSONObject product = response.getJSONObject(i);
+//
+//                                int id_product = Integer.parseInt(product.getString("id_product"));
+//                                String name_picture = product.getString("name_picture");
+//                                String name_product = product.getString("name_product");
+//                                String submit = product.getString("submit");
+//                                String properties = product.getString("properties");
+//                                String production = product.getString("production");
+//                                String curiosities = product.getString("curiosities");
+//
+//                                ListProductsMainActivity element = new ListProductsMainActivity(
+//                                        id_product,
+//                                        name_picture,
+//                                        name_product,
+//                                        submit,
+//                                        properties,
+//                                        production,
+//                                        curiosities,
+//                                        getResources().getIdentifier(name_picture + "", "drawable", getApplicationContext().getPackageName())
+//                                );
+//
+//                                fruitsLists.add(element);
+//                                listAdapterMainActivity.notifyItemInserted(fruitsLists.size());
+//                            }
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                },
+//                error -> Log.d("ErrorVolley", "Error Respuesta en JSON: " + error.getMessage())
+//        ) {
+//            @Override
+//            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
+//                int mStatusCode = response.statusCode;
+//                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
+//                return super.parseNetworkResponse(response);
+//            }
+//        };
+//        return jsArrayRequest;
+//    }
 
-                                int id_product = Integer.parseInt(product.getString("id_product"));
-                                String name_picture = product.getString("name_picture");
-                                String name_product = product.getString("name_product");
-                                String submit = product.getString("submit");
-                                String properties = product.getString("properties");
-                                String production = product.getString("production");
-                                String curiosities = product.getString("curiosities");
 
-                                ListProductsMainActivity element = new ListProductsMainActivity(
-                                        id_product,
-                                        name_picture,
-                                        name_product,
-                                        submit,
-                                        properties,
-                                        production,
-                                        curiosities,
-                                        getResources().getIdentifier(name_picture + "", "drawable", getApplicationContext().getPackageName())
-                                );
+    /**
+     * PRUEBA
+     *
+     * @return
+     */
+    private void getProductFruits() {
+        new Thread(() -> {
+            try {
+                // Abrir el archivo JSON desde res/raw
+                InputStream inputStream = getResources().openRawResource(R.raw.products);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                StringBuilder stringBuilder = new StringBuilder();
+                String line;
 
-                                fruitsLists.add(element);
-                                listAdapterMainActivity.notifyItemInserted(fruitsLists.size());
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                // Leer el archivo línea por línea
+                while ((line = reader.readLine()) != null) {
+                    stringBuilder.append(line);
+                }
+
+                // Convertir el contenido a un String
+                String jsonString = stringBuilder.toString();
+                Log.d("DEBUG_JSON", "Contenido del archivo JSON: " + jsonString); // Verifica si se lee bien
+
+
+                // Parsear el JSON
+                JSONArray response = new JSONArray(jsonString);
+
+                // Procesar el JSON
+                int numContact = response.length();
+                for (int i = 0; i < numContact; i++) {
+                    JSONObject product = response.getJSONObject(i);
+
+                    int id_product = product.getInt("id_product");
+                    String name_product = product.getString("name_product");
+                    String submit = product.getString("submit");
+                    String properties = product.getString("properties");
+                    String production = product.getString("production");
+                    String curiosities = product.getString("curiosities");
+
+                    // Obtener la ruta de la imagen desde el JSON
+                    String name_picture = product.getString("name_picture");
+
+                    // Buscar la imagen en diferentes carpetas drawable
+                    int imageResId = getResources().getIdentifier(name_picture, "drawable", getPackageName());
+
+                    if (imageResId == 0) {
+                        imageResId = getResources().getIdentifier(name_picture, "drawable-img", getPackageName());
                     }
-                },
-                error -> Log.d("ErrorVolley", "Error Respuesta en JSON: " + error.getMessage())
-        ) {
-            @Override
-            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
-                int mStatusCode = response.statusCode;
-                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
-                return super.parseNetworkResponse(response);
+
+                    if (imageResId == 0) {
+                        imageResId = getResources().getIdentifier(name_picture, "drawable-v24", getPackageName());
+                    }
+
+                    // Si no se encuentra la imagen, asignar un recurso por defecto
+                    if (imageResId == 0) {
+                        imageResId = R.drawable.obras; // Asegúrate de tener un recurso por defecto
+                    }
+
+                    // Crear el elemento con el ID del recurso de la imagen
+                    ListProductsMainActivity element = new ListProductsMainActivity(
+                            id_product,
+                            name_picture, // Pasamos el nombre de la imagen
+                            name_product,
+                            submit,
+                            properties,
+                            production,
+                            curiosities,
+                            imageResId // Pasamos el ID del recurso de la imagen
+                    );
+
+                    // Añadir el elemento a la lista
+                    fruitsLists.add(element);
+
+                    // Notificar al adaptador en el hilo principal
+                    runOnUiThread(() -> listAdapterMainActivity.notifyItemInserted(fruitsLists.size() - 1));
+                }
+            } catch (IOException | JSONException e) {
+                e.printStackTrace(); // Manejar excepciones
             }
-        };
-        return jsArrayRequest;
+        }).start();
     }
 
     /**
