@@ -25,10 +25,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.Volley;
 import com.example.delahuertaalamesa.databinding.ActivityMainBinding;
 import com.example.delahuertaalamesa.propertiesproducts.PropertiesProducts;
 import com.example.delahuertaalamesa.recyclerviewMainActivity.ListAdapterMainActivity;
@@ -42,11 +40,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormatSymbols;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private ActivityMainBinding binding;
@@ -54,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ListAdapterMainActivity listAdapterMainActivity;
     private RecyclerView recyclerView;
     private int indexmonth;
-    private RequestQueue requestQueue;
+//    private RequestQueue requestQueue;
     private String channel;
     private Toast toast;
 
@@ -109,20 +111,186 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * to load the reciblerView,
      * by default it shows the products of the current month
      */
+//    private void loadProducts() {
+//        try {
+//            productsMonth = new ArrayList<>();
+//
+//            loadRecycler();
+//
+//            requestQueue = Volley.newRequestQueue(this);
+//            JsonArrayRequest jsonArrayRequest = getProductsMonthID(indexmonth);
+//            requestQueue.add(jsonArrayRequest);
+//        } catch (Exception e) {
+//            Log.d("canalERROR", "Se ha producido una excepción genérica");
+//            Log.d("canalERROR", Util.PrintEx(e));
+//        }
+//    }
+
+    /**
+     * PRUEBA
+     */
+//    private void loadProducts() {
+//        try {
+//            productsMonth = new ArrayList<>();
+//
+//            // Leer el archivo JSON de assets
+//            String json = loadJSONFromAsset("products.json");
+//            JSONArray jsonArray = new JSONArray(json);
+//
+//            for (int i = 0; i < jsonArray.length(); i++) {
+//                JSONObject product = jsonArray.getJSONObject(i);
+//
+//                int id_month_product = product.getInt("id_month");
+//                if (id_month_product == indexmonth) { // Filtra los productos por el mes seleccionado
+//                    int id_product = product.getInt("id_product");
+//                    String name_picture = product.getString("name_picture");
+//                    String name_product = product.getString("name_product");
+//                    String submit = product.getString("submit");
+//                    String properties = product.getString("properties");
+//                    String production = product.getString("production");
+//                    String curiosities = product.getString("curiosities");
+//
+//                    ListProductsMainActivity element = new ListProductsMainActivity(
+//                            id_product,
+//                            name_picture,
+//                            name_product,
+//                            submit,
+//                            properties,
+//                            production,
+//                            curiosities,
+//                            getResources().getIdentifier(name_picture, "drawable", getApplicationContext().getPackageName())
+//                    );
+//
+//                    productsMonth.add(element);
+//                }
+//            }
+//
+//            loadRecycler(); // Cargar RecyclerView con los datos
+//
+//        } catch (Exception e) {
+//            Log.d("canalERROR", "Error al cargar productos desde archivo local");
+//            Log.d("canalERROR", Util.PrintEx(e));
+//        }
+//    }
+//
+//    private String loadJSONFromAsset(String filename) {
+//        String json = null;
+//        try {
+//            InputStream is = getAssets().open(filename);
+//            int size = is.available();
+//            byte[] buffer = new byte[size];
+//            is.read(buffer);
+//            is.close();
+//            json = new String(buffer, "UTF-8");
+//        } catch (IOException e) {
+//            Log.e("JSON Load Error", "Error al leer el archivo JSON", e);
+//        }
+//        return json;
+//    }
     private void loadProducts() {
         try {
             productsMonth = new ArrayList<>();
 
+            // 1. Load Season Data (months for each product)
+            Map<String, List<String>> productSeasons = loadSeasons();
+            if (productSeasons == null) {
+                Log.e("canalERROR", "Error loading season data.");
+                return; // Or handle the error as needed
+            }
+
+            // 2. Load Product Data
+            String json = loadJSONFromAsset("products.json");
+            JSONArray jsonArray = new JSONArray(json);
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject product = jsonArray.getJSONObject(i);
+                String id_product_str = product.getString("id_product"); // Get product ID as String
+
+                // 3. Check if product is in the selected month
+                if (productSeasons.containsKey(id_product_str)) {
+                    List<String> months = productSeasons.get(id_product_str);
+                    assert months != null;
+                    if (months.contains(String.valueOf(indexmonth))) { // Check if the selected month is in the product's season
+                        int id_product = Integer.parseInt(id_product_str); // Convert to int only when needed
+                        String name_picture = product.getString("name_product");
+                        String name_product = product.getString("name_product");
+                        String submit = product.getString("submit");
+                        String properties = product.getString("properties");
+                        String production = product.getString("production");
+                        String curiosities = product.getString("curiosities");
+
+
+                        ListProductsMainActivity element = new ListProductsMainActivity(
+                                id_product,
+                                name_picture,
+                                name_product,
+                                submit,
+                                properties,
+                                production,
+                                curiosities,
+                                getResources().getIdentifier(name_picture, "drawable", getApplicationContext().getPackageName())
+                        );
+
+                        productsMonth.add(element);
+                    }
+                } else {
+                    Log.w("canalERROR", "Product " + id_product_str + " not found in season data.");
+                }
+            }
+
             loadRecycler();
 
-            requestQueue = Volley.newRequestQueue(this);
-            JsonArrayRequest jsonArrayRequest = getProductsMonthID(indexmonth);
-            requestQueue.add(jsonArrayRequest);
         } catch (Exception e) {
-            Log.d("canalERROR", "Se ha producido una excepción genérica");
-            Log.d("canalERROR", Util.PrintEx(e));
+            Log.e("canalERROR", "Error loading products: " + e.getMessage());
+            Log.e("canalERROR", Util.PrintEx(e)); // Assuming Util.PrintEx exists
         }
     }
+
+
+    private Map<String, List<String>> loadSeasons() {
+        Map<String, List<String>> productSeasons = new HashMap<>();
+        try {
+            String json = loadJSONFromAsset("season.json");
+            JSONArray jsonArray = new JSONArray(json);
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject seasonData = jsonArray.getJSONObject(i);
+                String productId = seasonData.getString("id_product");
+                JSONArray monthArray = seasonData.getJSONArray("id_month");
+                List<String> months = new ArrayList<>();
+                for (int j = 0; j < monthArray.length(); j++) {
+                    months.add(monthArray.getString(j));
+                }
+                productSeasons.put(productId, months);
+            }
+            return productSeasons;
+
+        } catch (Exception e) {
+            Log.e("canalERROR", "Error loading seasons from " + "season.json" + ": " + e.getMessage());
+            return null;
+        }
+    }
+
+
+    private String loadJSONFromAsset(String filename) {
+        String json = null;
+        try {
+            InputStream is = getAssets().open(filename);
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            json = new String(buffer, "UTF-8");
+        } catch (IOException ex) {
+            Log.e("canalERROR", "Error loading JSON from assets: " + ex.getMessage());
+            return null;
+        }
+        return json;
+    }
+
+
+
+
 
     /**
      * Load recyclerView
