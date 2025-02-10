@@ -1,10 +1,12 @@
-# De la hueta a la mesa
+![image](https://github.com/user-attachments/assets/602887e1-d913-4eb7-a5c7-749c40c3dfd8)
 
-Mi nombre es Daniel soy estudiante de FP en Diseño de Aplicaciones Multiplataforma.
+Mi proyecto de fin de ciclo de FP en Diseño de Aplicaciones Multiplataforma.
 
-Os presento mi proyecto de fin de ciclo, "De la huerta a la mesa" una herramienta que sirve para mostrar las frutas y verduras que se encuentran de temporada en nuestro país.
+"De la huerta a la mesa" una herramienta que sirve para mostrar las frutas y verduras que se encuentran de temporada.
 
-Espero que esta aplicación para android sirva de utilidad a las personas que accedan a ella.
+![image](https://github.com/user-attachments/assets/09c4bed8-04f1-4fc2-a136-65a4d5f45b05)
+
+Espero que esta aplicación escrita en java y disesañada para android sirva de utilidad a las personas.
 
 Incluyo el manual de instalación, el manual de uso y el ejecutable de la aplicación.
 
