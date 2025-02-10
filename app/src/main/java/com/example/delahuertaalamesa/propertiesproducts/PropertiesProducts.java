@@ -26,7 +26,6 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.example.delahuertaalamesa.MainActivity;
 import com.example.delahuertaalamesa.R;
@@ -40,6 +39,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +50,7 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
     private int id_product;
     private int id_user;
     private List<Favorites> favoritesUserList;
-    private List<Months> monthsProduct;
+    private List<Integer> monthsProduct;
     private RequestQueue requestQueue;
     private Toast toast;
 
@@ -133,14 +135,16 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
      * Performs the query to the web service
      */
     private void getProduct_Months() {
-        requestQueue = Volley.newRequestQueue(this);
+//        requestQueue = Volley.newRequestQueue(this);
+//
+//        JsonObjectRequest jsonObjectRequest = getProductID(id_product);
+//        requestQueue.add(jsonObjectRequest);
+        getProductID(id_product);
 
-        JsonObjectRequest jsonObjectRequest = getProductID(id_product);
-        requestQueue.add(jsonObjectRequest);
-
-        monthsProduct = new ArrayList<>();
-        JsonArrayRequest jsonArrayRequest = getMonthsProductID(id_product);
-        requestQueue.add(jsonArrayRequest);
+//        monthsProduct = new ArrayList<>();
+//        JsonArrayRequest jsonArrayRequest = getMonthsProductID(id_product);
+//        requestQueue.add(jsonArrayRequest);
+        getMonthsProductID(id_product);
     }
 
     /**
@@ -159,8 +163,11 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
             Glide
                     .with(this)
                     .load(getResources().getIdentifier(name_picture, "drawable", getApplicationContext().getPackageName()))
-                    .centerCrop()
+                    .centerInside()
                     .into(imageView);
+            //.fitCenter()
+            //.centerInside()
+            //.centerCrop()
 
             tvCommonName.setText(name_product);
             tvSubmit.setText(submit);
@@ -301,82 +308,190 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
      * Performs the query to the web service,
      * the months that a product is consumed
      */
-    private JsonArrayRequest getMonthsProductID(int id_product) {
-        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(
-                Request.Method.GET,
-                "https://granped.es/huertamesa/months/MonthsProduct.php?id_product=" + id_product,
-                null,
-                response -> {
-                    if (response != null) {
-                        response.toString();
-                        try {
-                            int numContacts = response.length();
-                            for (int i = 0; i < numContacts; i++) {
-                                JSONObject product = response.getJSONObject(i);
+//    private JsonArrayRequest getMonthsProductID(int id_product) {
+//        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(
+//                Request.Method.GET,
+//                "https://granped.es/huertamesa/months/MonthsProduct.php?id_product=" + id_product,
+//                null,
+//                response -> {
+//                    if (response != null) {
+//                        response.toString();
+//                        try {
+//                            int numContacts = response.length();
+//                            for (int i = 0; i < numContacts; i++) {
+//                                JSONObject product = response.getJSONObject(i);
+//
+//                                int id_month = Integer.parseInt(product.getString("id_month"));
+//                                String name_month = product.getString("name_month");
+//
+//                                Months months = new Months(id_month, name_month);
+//
+//                                monthsProduct.add(months);
+//                                season(monthsProduct.get(i).getId_month());
+//                            }
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                },
+//                error -> Log.d("canalError", "Error Respuesta en JSON: " + error.getMessage())
+//        ) {
+//            @Override
+//            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
+//                int mStatusCode = response.statusCode;
+//                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
+//                return super.parseNetworkResponse(response);
+//            }
+//        };
+//        return jsArrayRequest;
+//    }
 
-                                int id_month = Integer.parseInt(product.getString("id_month"));
-                                String name_month = product.getString("name_month");
+    /**
+     * PRUEBA
+     */
+    private void getMonthsProductID(int id_product) {
+        try {
+            // Leer el archivo JSON desde assets
+            InputStream is = getAssets().open("season.json");
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
 
-                                Months months = new Months(id_month, name_month);
+            // Convertir a String
+            String json = new String(buffer, StandardCharsets.UTF_8);
 
-                                monthsProduct.add(months);
-                                season(monthsProduct.get(i).getId_month());
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+            // Convertir el JSON a un JSONArray
+            JSONArray jsonArray = new JSONArray(json);
+
+            // Asegurar que la lista no sea null y limpiarla antes de agregar datos
+            if (monthsProduct == null) {
+                monthsProduct = new ArrayList<>();
+            } else {
+                monthsProduct.clear();
+            }
+
+            // Buscar todos los meses asociados al producto
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject productMonth = jsonArray.getJSONObject(i);
+
+                // Verificar si el id_product coincide
+                if (productMonth.getInt("id_product") == id_product) {
+                    Object idMonthObject = productMonth.get("id_month");
+
+                    // Si es un JSONArray (lista de meses)
+                    if (idMonthObject instanceof JSONArray) {
+                        JSONArray monthsArray = (JSONArray) idMonthObject;
+                        for (int j = 0; j < monthsArray.length(); j++) {
+                            int id_month = monthsArray.getInt(j);
+                            monthsProduct.add(id_month);
                         }
                     }
-                },
-                error -> Log.d("canalError", "Error Respuesta en JSON: " + error.getMessage())
-        ) {
-            @Override
-            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
-                int mStatusCode = response.statusCode;
-                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
-                return super.parseNetworkResponse(response);
+                    // Si es un solo número (en caso de que el JSON tenga otro formato)
+                    else if (idMonthObject instanceof Integer) {
+                        monthsProduct.add((Integer) idMonthObject);
+                    }
+                }
             }
-        };
-        return jsArrayRequest;
+
+            // Llamar a season() después de completar la carga de meses
+            for (int id_month : monthsProduct) {
+                season(id_month);
+            }
+
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+            Log.d("canalERROR", "Error al leer season.json: " + e.getMessage());
+        }
     }
 
     /**
      * Performs the query to the web service,
      * the complete product by passing your id
      */
-    private JsonObjectRequest getProductID(int id_product) {
-        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                Request.Method.GET,
-                "https://granped.es/huertamesa/products/ProductsLogic.php?id_product=" + id_product,
-                null,
-                response -> {
-                    if (response != null) {
-                        response.toString();
-                        try {
-                            String name_picture = response.getString("name_picture");
-                            String name_product = response.getString("name_product");
-                            String submit = response.getString("submit");
-                            String properties = response.getString("properties");
-                            String production = response.getString("production");
-                            String curiosities = response.getString("curiosities");
+//    private JsonObjectRequest getProductID(int id_product) {
+//        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+//                Request.Method.GET,
+//                "https://granped.es/huertamesa/products/ProductsLogic.php?id_product=" + id_product,
+//                null,
+//                response -> {
+//                    if (response != null) {
+//                        response.toString();
+//                        try {
+//                            String name_picture = response.getString("name_picture");
+//                            String name_product = response.getString("name_product");
+//                            String submit = response.getString("submit");
+//                            String properties = response.getString("properties");
+//                            String production = response.getString("production");
+//                            String curiosities = response.getString("curiosities");
+//
+//                            getProduct(name_picture, name_product, submit, properties, production, curiosities);
+//
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                },
+//                error -> Log.d("canalError", "Error Respuesta en JSON: " + error.getMessage())
+//        ) {
+//            @Override
+//            protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
+//                int mStatusCode = response.statusCode;
+//                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
+//                return super.parseNetworkResponse(response);
+//            }
+//        };
+//        return jsonObjectRequest;
+//    }
 
-                            getProduct(name_picture, name_product, submit, properties, production, curiosities);
+    /**
+     * PRUEBA
+     */
 
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                },
-                error -> Log.d("canalError", "Error Respuesta en JSON: " + error.getMessage())
-        ) {
-            @Override
-            protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
-                int mStatusCode = response.statusCode;
-                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
-                return super.parseNetworkResponse(response);
+    private void getProductID(int id_product) {
+        try {
+            // Leer el archivo JSON desde assets
+            InputStream is = getAssets().open("products.json");
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+
+            // Convertir a String
+            String json = new String(buffer, StandardCharsets.UTF_8);
+
+            // Convertir el JSON a un JSONArray
+            JSONArray jsonArray = new JSONArray(json);
+
+            // Buscar el producto con el id_product
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject product = jsonArray.getJSONObject(i);
+                if (product.getInt("id_product") == id_product) {
+                    // Obtener los valores
+                    String name_picture = product.getString("name_product");
+                    String name_product = product.getString("name_product");
+                    String submit = product.getString("submit");
+                    String properties = product.getString("properties");
+                    String production = product.getString("production");
+                    String curiosities = product.getString("curiosities");
+
+                    // Llamar a la función que maneja los datos
+                    getProduct(name_picture, name_product, submit, properties, production, curiosities);
+
+                    return; // Detener la búsqueda al encontrar el producto
+                }
             }
-        };
-        return jsonObjectRequest;
+
+            // Si no se encuentra el producto
+            Log.d("ProductSearch", "Producto no encontrado");
+
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
     }
+
+
+
 
     /**
      * CardView changes color if the product is consumed in that season

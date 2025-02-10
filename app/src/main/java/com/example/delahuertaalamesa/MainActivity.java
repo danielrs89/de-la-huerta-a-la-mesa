@@ -23,10 +23,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.toolbox.JsonArrayRequest;
 import com.example.delahuertaalamesa.databinding.ActivityMainBinding;
 import com.example.delahuertaalamesa.propertiesproducts.PropertiesProducts;
 import com.example.delahuertaalamesa.recyclerviewMainActivity.ListAdapterMainActivity;
@@ -37,7 +33,6 @@ import com.example.delahuertaalamesa.tools.ItemClickSupport;
 import com.example.delahuertaalamesa.tools.Util;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -490,57 +485,57 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      * @param id_month
      * @return
      */
-    private JsonArrayRequest getProductsMonthID(int id_month) {
-        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(
-                Request.Method.GET,
-                "https://granped.es/huertamesa/products/ProductsMonth.php?id_month=" + id_month,
-                null,
-                response -> {
-                    if (response != null) {
-                        response.toString();
-                        try {
-                            int length = response.length();
-                            for (int i = 0; i < length; i++) {
-                                JSONObject product = response.getJSONObject(i);
-
-                                int id_product = Integer.parseInt(product.getString("id_product"));
-                                String name_picture = product.getString("name_picture");
-                                String name_product = product.getString("name_product");
-                                String submit = product.getString("submit");
-                                String properties = product.getString("properties");
-                                String production = product.getString("production");
-                                String curiosities = product.getString("curiosities");
-
-                                ListProductsMainActivity element = new ListProductsMainActivity(
-                                        id_product,
-                                        name_picture,
-                                        name_product,
-                                        submit,
-                                        properties,
-                                        production,
-                                        curiosities,
-                                        getResources().getIdentifier(name_picture + "", "drawable", getApplicationContext().getPackageName())
-                                );
-
-                                productsMonth.add(element);
-                                listAdapterMainActivity.notifyItemInserted(productsMonth.size());
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                },
-                error -> Log.d("canalError", "Error Respuesta en JSON: " + error.getMessage())
-        ) {
-            @Override
-            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
-                int mStatusCode = response.statusCode;
-                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
-                return super.parseNetworkResponse(response);
-            }
-        };
-        return jsArrayRequest;
-    }
+//    private JsonArrayRequest getProductsMonthID(int id_month) {
+//        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(
+//                Request.Method.GET,
+//                "https://granped.es/huertamesa/products/ProductsMonth.php?id_month=" + id_month,
+//                null,
+//                response -> {
+//                    if (response != null) {
+//                        response.toString();
+//                        try {
+//                            int length = response.length();
+//                            for (int i = 0; i < length; i++) {
+//                                JSONObject product = response.getJSONObject(i);
+//
+//                                int id_product = Integer.parseInt(product.getString("id_product"));
+//                                String name_picture = product.getString("name_picture");
+//                                String name_product = product.getString("name_product");
+//                                String submit = product.getString("submit");
+//                                String properties = product.getString("properties");
+//                                String production = product.getString("production");
+//                                String curiosities = product.getString("curiosities");
+//
+//                                ListProductsMainActivity element = new ListProductsMainActivity(
+//                                        id_product,
+//                                        name_picture,
+//                                        name_product,
+//                                        submit,
+//                                        properties,
+//                                        production,
+//                                        curiosities,
+//                                        getResources().getIdentifier(name_picture + "", "drawable", getApplicationContext().getPackageName())
+//                                );
+//
+//                                productsMonth.add(element);
+//                                listAdapterMainActivity.notifyItemInserted(productsMonth.size());
+//                            }
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                },
+//                error -> Log.d("canalError", "Error Respuesta en JSON: " + error.getMessage())
+//        ) {
+//            @Override
+//            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
+//                int mStatusCode = response.statusCode;
+//                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
+//                return super.parseNetworkResponse(response);
+//            }
+//        };
+//        return jsArrayRequest;
+//    }
 
     /**
      * If you login show gifFavorites in alert form

@@ -18,7 +18,8 @@ import com.example.delahuertaalamesa.databinding.ActivityScreenLoadBinding;
 
 public class ScreenLoad extends AppCompatActivity {
     private ActivityScreenLoadBinding binding;
-    private final int TIME = 4500;
+    private final int TIME = 0;
+//    private final int TIME = 4500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
