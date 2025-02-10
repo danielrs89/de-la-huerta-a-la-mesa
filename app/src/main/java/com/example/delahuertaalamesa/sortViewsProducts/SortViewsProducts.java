@@ -38,6 +38,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +47,9 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
     private ListAdapterMainActivity listAdapterMainActivity;
     private RecyclerView recyclerView;
     private List<ListProductsMainActivity> fruitsLists;
+    private final int FRUITS_SPLIT_VEGETABLES = 49;
     private List<ListProductsMainActivity> vegetablesLists;
+
     private List<ListProductsMainActivity> favoritesLists;
     private ActivitySortViewsProductsBinding binding;
     private String channel;
@@ -80,10 +84,10 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
 
                 loadRecycler();
 
-                requestQueue = Volley.newRequestQueue(this);
-                JsonArrayRequest jsonArrayRequest = getProductFruits();
-                requestQueue.add(jsonArrayRequest);
-
+//                requestQueue = Volley.newRequestQueue(this);
+//                JsonArrayRequest jsonArrayRequest = getProductFruits();
+//                requestQueue.add(jsonArrayRequest);
+                getProductFruits();
 
                 break;
             }
@@ -93,9 +97,10 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
 
                 loadRecycler();
 
-                requestQueue = Volley.newRequestQueue(this);
-                JsonArrayRequest jsonArrayRequest = getProductVegetables();
-                requestQueue.add(jsonArrayRequest);
+//                requestQueue = Volley.newRequestQueue(this);
+//                JsonArrayRequest jsonArrayRequest = getProductVegetables();
+//                requestQueue.add(jsonArrayRequest);
+                getProductVegetables();
                 break;
             }
             case "favorites": {
@@ -229,17 +234,17 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
      * going to web "De la huerta a la mesa" after pressing web
      */
     private void acceptWeb() {
-        AlertDialog alertDialog = new AlertDialog
-                .Builder(this)
-                .setPositiveButton("Sí, continuar", (dialog, which) -> {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://granped.es/webhuertamesa"));
-                    startActivity(intent);
-                })
-                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
-                .setTitle("Confirmar")
-                .setMessage("¿Quieres ir a la web \n\"De la huerta a la mesa\"?")
-                .create();
-        alertDialog.show();
+//        AlertDialog alertDialog = new AlertDialog
+//                .Builder(this)
+//                .setPositiveButton("Sí, continuar", (dialog, which) -> {
+//                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://granped.es/webhuertamesa"));
+//                    startActivity(intent);
+//                })
+//                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+//                .setTitle("Confirmar")
+//                .setMessage("¿Quieres ir a la web \n\"De la huerta a la mesa\"?")
+//                .create();
+//        alertDialog.show();
     }
 
     /**
@@ -289,140 +294,120 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
      *
      * @return
      */
-    private JsonArrayRequest getProductFruits() {
-        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(
-                Request.Method.GET,
-                "https://granped.es/huertamesa/products/ProductsFruits.php",
-                null,
-                response -> {
-                    if (response != null) {
-                        response.toString();
-                        try {
-                            int numContact = response.length();
-                            for (int i = 0; i < numContact; i++) {
-                                JSONObject product = response.getJSONObject(i);
-
-                                int id_product = Integer.parseInt(product.getString("id_product"));
-                                String name_picture = product.getString("name_picture");
-                                String name_product = product.getString("name_product");
-                                String submit = product.getString("submit");
-                                String properties = product.getString("properties");
-                                String production = product.getString("production");
-                                String curiosities = product.getString("curiosities");
-
-                                ListProductsMainActivity element = new ListProductsMainActivity(
-                                        id_product,
-                                        name_picture,
-                                        name_product,
-                                        submit,
-                                        properties,
-                                        production,
-                                        curiosities,
-                                        getResources().getIdentifier(name_picture + "", "drawable", getApplicationContext().getPackageName())
-                                );
-
-                                fruitsLists.add(element);
-                                listAdapterMainActivity.notifyItemInserted(fruitsLists.size());
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                },
-                error -> Log.d("ErrorVolley", "Error Respuesta en JSON: " + error.getMessage())
-        ) {
-            @Override
-            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
-                int mStatusCode = response.statusCode;
-                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
-                return super.parseNetworkResponse(response);
-            }
-        };
-        return jsArrayRequest;
-    }
+//    private JsonArrayRequest getProductFruits() {
+//        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(
+//                Request.Method.GET,
+//                "https://granped.es/huertamesa/products/ProductsFruits.php",
+//                null,
+//                response -> {
+//                    if (response != null) {
+//                        response.toString();
+//                        try {
+//                            int numContact = response.length();
+//                            for (int i = 0; i < numContact; i++) {
+//                                JSONObject product = response.getJSONObject(i);
+//
+//                                int id_product = Integer.parseInt(product.getString("id_product"));
+//                                String name_picture = product.getString("name_picture");
+//                                String name_product = product.getString("name_product");
+//                                String submit = product.getString("submit");
+//                                String properties = product.getString("properties");
+//                                String production = product.getString("production");
+//                                String curiosities = product.getString("curiosities");
+//
+//                                ListProductsMainActivity element = new ListProductsMainActivity(
+//                                        id_product,
+//                                        name_picture,
+//                                        name_product,
+//                                        submit,
+//                                        properties,
+//                                        production,
+//                                        curiosities,
+//                                        getResources().getIdentifier(name_picture + "", "drawable", getApplicationContext().getPackageName())
+//                                );
+//
+//                                fruitsLists.add(element);
+//                                listAdapterMainActivity.notifyItemInserted(fruitsLists.size());
+//                            }
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                },
+//                error -> Log.d("ErrorVolley", "Error Respuesta en JSON: " + error.getMessage())
+//        ) {
+//            @Override
+//            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
+//                int mStatusCode = response.statusCode;
+//                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
+//                return super.parseNetworkResponse(response);
+//            }
+//        };
+//        return jsArrayRequest;
+//    }
 
 
     /**
      * PRUEBA
-     *
-     * @return
      */
-//    private void getProductFruits() {
-//        new Thread(() -> {
-//            try {
-//                // Abrir el archivo JSON desde res/raw
-//                InputStream inputStream = getResources().openRawResource(R.raw.products);
-//                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-//                StringBuilder stringBuilder = new StringBuilder();
-//                String line;
-//
-//                // Leer el archivo línea por línea
-//                while ((line = reader.readLine()) != null) {
-//                    stringBuilder.append(line);
-//                }
-//
-//                // Convertir el contenido a un String
-//                String jsonString = stringBuilder.toString();
-//                Log.d("DEBUG_JSON", "Contenido del archivo JSON: " + jsonString); // Verifica si se lee bien
-//
-//
-//                // Parsear el JSON
-//                JSONArray response = new JSONArray(jsonString);
-//
-//                // Procesar el JSON
-//                int numContact = response.length();
-//                for (int i = 0; i < numContact; i++) {
-//                    JSONObject product = response.getJSONObject(i);
-//
-//                    int id_product = product.getInt("id_product");
-//                    String name_product = product.getString("name_product");
-//                    String submit = product.getString("submit");
-//                    String properties = product.getString("properties");
-//                    String production = product.getString("production");
-//                    String curiosities = product.getString("curiosities");
-//
-//                    // Obtener la ruta de la imagen desde el JSON
-//                    String name_picture = product.getString("name_picture");
-//
-//                    // Buscar la imagen en diferentes carpetas drawable
-//                    int imageResId = getResources().getIdentifier(name_picture, "drawable", getPackageName());
-//
-//                    if (imageResId == 0) {
-//                        imageResId = getResources().getIdentifier(name_picture, "drawable-img", getPackageName());
-//                    }
-//
-//                    if (imageResId == 0) {
-//                        imageResId = getResources().getIdentifier(name_picture, "drawable-v24", getPackageName());
-//                    }
-//
-//                    // Si no se encuentra la imagen, asignar un recurso por defecto
-//                    if (imageResId == 0) {
-//                        imageResId = R.drawable.obras; // Asegúrate de tener un recurso por defecto
-//                    }
-//
-//                    // Crear el elemento con el ID del recurso de la imagen
-//                    ListProductsMainActivity element = new ListProductsMainActivity(
-//                            id_product,
-//                            name_picture, // Pasamos el nombre de la imagen
-//                            name_product,
-//                            submit,
-//                            properties,
-//                            production,
-//                            curiosities,
-//                            imageResId // Pasamos el ID del recurso de la imagen
-//                    );
-//
-//                    // Añadir el elemento a la lista
-//                    fruitsLists.add(element);
-//
-//                    // Notificar al adaptador en el hilo principal
-//                    runOnUiThread(() -> listAdapterMainActivity.notifyItemInserted(fruitsLists.size() - 1));
-//                }
-//            } catch (IOException | JSONException e) {
-//                e.printStackTrace(); // Manejar excepciones
-//            }
-//        }).start();
-//    }
+    private void getProductFruits() {
+        try {
+            fruitsLists = new ArrayList<>();
+
+            // Leer el archivo JSON de assets
+            String json = loadJSONFromAsset("products.json");
+            JSONArray jsonArray = new JSONArray(json);
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject product = jsonArray.getJSONObject(i);
+
+                int aux_id_product = product.getInt("id_product");
+                if (aux_id_product <= FRUITS_SPLIT_VEGETABLES) { // Filtra los productos por el mes seleccionado
+                    int id_product = product.getInt("id_product");
+                    String name_picture = product.getString("name_product");
+                    String name_product = product.getString("name_product");
+                    String submit = product.getString("submit");
+                    String properties = product.getString("properties");
+                    String production = product.getString("production");
+                    String curiosities = product.getString("curiosities");
+
+                    ListProductsMainActivity element = new ListProductsMainActivity(
+                            id_product,
+                            name_picture,
+                            name_product,
+                            submit,
+                            properties,
+                            production,
+                            curiosities,
+                            getResources().getIdentifier(name_picture, "drawable", getApplicationContext().getPackageName())
+                    );
+
+                    fruitsLists.add(element);
+                }
+            }
+
+            loadRecycler(); // Cargar RecyclerView con los datos
+
+        } catch (Exception e) {
+            Log.d("canalERROR", "Error al cargar productos desde archivo local");
+            Log.d("canalERROR", Util.PrintEx(e));
+        }
+    }
+
+    private String loadJSONFromAsset(String filename) {
+        String json = null;
+        try {
+            InputStream is = getAssets().open(filename);
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            json = new String(buffer, "UTF-8");
+        } catch (IOException e) {
+            Log.e("JSON Load Error", "Error al leer el archivo JSON", e);
+        }
+        return json;
+    }
 
     /**
      * Make the query with the server,
@@ -430,56 +415,103 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
      *
      * @return
      */
-    private JsonArrayRequest getProductVegetables() {
-        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(
-                Request.Method.GET,
-                "https://granped.es/huertamesa/products/ProductsVegetables.php",
-                null,
-                response -> {
-                    if (response != null) {
-                        response.toString();
-                        try {
-                            int numContact = response.length();
-                            for (int i = 0; i < numContact; i++) {
-                                JSONObject product = response.getJSONObject(i);
+//    private JsonArrayRequest getProductVegetables() {
+//        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(
+//                Request.Method.GET,
+//                "https://granped.es/huertamesa/products/ProductsVegetables.php",
+//                null,
+//                response -> {
+//                    if (response != null) {
+//                        response.toString();
+//                        try {
+//                            int numContact = response.length();
+//                            for (int i = 0; i < numContact; i++) {
+//                                JSONObject product = response.getJSONObject(i);
+//
+//                                int id_product = Integer.parseInt(product.getString("id_product"));
+//                                String name_picture = product.getString("name_picture");
+//                                String name_product = product.getString("name_product");
+//                                String submit = product.getString("submit");
+//                                String properties = product.getString("properties");
+//                                String production = product.getString("production");
+//                                String curiosities = product.getString("curiosities");
+//
+//                                ListProductsMainActivity element = new ListProductsMainActivity(
+//                                        id_product,
+//                                        name_picture,
+//                                        name_product,
+//                                        submit,
+//                                        properties,
+//                                        production,
+//                                        curiosities,
+//                                        getResources().getIdentifier(name_picture + "", "drawable", getApplicationContext().getPackageName())
+//                                );
+//
+//                                vegetablesLists.add(element);
+//                                listAdapterMainActivity.notifyItemInserted(vegetablesLists.size());
+//                            }
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                },
+//                error -> Log.d("ErrorVolley", "Error Respuesta en JSON: " + error.getMessage())
+//        ) {
+//            @Override
+//            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
+//                int mStatusCode = response.statusCode;
+//                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
+//                return super.parseNetworkResponse(response);
+//            }
+//        };
+//        return jsArrayRequest;
+//    }
 
-                                int id_product = Integer.parseInt(product.getString("id_product"));
-                                String name_picture = product.getString("name_picture");
-                                String name_product = product.getString("name_product");
-                                String submit = product.getString("submit");
-                                String properties = product.getString("properties");
-                                String production = product.getString("production");
-                                String curiosities = product.getString("curiosities");
+    /**
+     * PRUEBA
+     */
+    private void getProductVegetables() {
+        try {
+            vegetablesLists = new ArrayList<>();
 
-                                ListProductsMainActivity element = new ListProductsMainActivity(
-                                        id_product,
-                                        name_picture,
-                                        name_product,
-                                        submit,
-                                        properties,
-                                        production,
-                                        curiosities,
-                                        getResources().getIdentifier(name_picture + "", "drawable", getApplicationContext().getPackageName())
-                                );
+            // Leer el archivo JSON de assets
+            String json = loadJSONFromAsset("products.json");
+            JSONArray jsonArray = new JSONArray(json);
 
-                                vegetablesLists.add(element);
-                                listAdapterMainActivity.notifyItemInserted(vegetablesLists.size());
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                },
-                error -> Log.d("ErrorVolley", "Error Respuesta en JSON: " + error.getMessage())
-        ) {
-            @Override
-            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
-                int mStatusCode = response.statusCode;
-                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
-                return super.parseNetworkResponse(response);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject product = jsonArray.getJSONObject(i);
+
+                int aux_id_product = product.getInt("id_product");
+                if (aux_id_product >= FRUITS_SPLIT_VEGETABLES) { // Filtra los productos por el mes seleccionado
+                    int id_product = product.getInt("id_product");
+                    String name_picture = product.getString("name_product");
+                    String name_product = product.getString("name_product");
+                    String submit = product.getString("submit");
+                    String properties = product.getString("properties");
+                    String production = product.getString("production");
+                    String curiosities = product.getString("curiosities");
+
+                    ListProductsMainActivity element = new ListProductsMainActivity(
+                            id_product,
+                            name_picture,
+                            name_product,
+                            submit,
+                            properties,
+                            production,
+                            curiosities,
+                            getResources().getIdentifier(name_picture, "drawable", getApplicationContext().getPackageName())
+                    );
+
+                    vegetablesLists.add(element);
+                }
             }
-        };
-        return jsArrayRequest;
+
+            loadRecycler(); // Cargar RecyclerView con los datos
+
+        } catch (Exception e) {
+            Log.d("canalERROR", "Error al cargar productos desde archivo local");
+            Log.d("canalERROR", Util.PrintEx(e));
+        }
     }
 
     /**

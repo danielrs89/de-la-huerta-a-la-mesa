@@ -491,11 +491,8 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
     }
 
 
-
-
     /**
      * CardView changes color if the product is consumed in that season
-     *
      * @param id_month
      */
     private void season(int id_month) {
