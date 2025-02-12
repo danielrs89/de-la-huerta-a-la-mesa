@@ -3,7 +3,9 @@ package com.example.delahuertaalamesa.sortViewsProducts;
 public class Favorites {
     private int id_product;
     private int id_user;
-
+    public Favorites(int id_product) {
+        this.id_product = id_product;
+    }
     public Favorites(int id_product, int id_user) {
         this.id_product = id_product;
         this.id_user = id_user;
