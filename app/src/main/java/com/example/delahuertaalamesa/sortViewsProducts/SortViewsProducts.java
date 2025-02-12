@@ -18,12 +18,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.Volley;
 import com.example.delahuertaalamesa.MainActivity;
 import com.example.delahuertaalamesa.R;
 import com.example.delahuertaalamesa.databinding.ActivitySortViewsProductsBinding;
@@ -35,7 +29,6 @@ import com.example.delahuertaalamesa.tools.ItemClickSupport;
 import com.example.delahuertaalamesa.tools.Util;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -53,7 +46,7 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
     private List<ListProductsMainActivity> favoritesLists;
     private ActivitySortViewsProductsBinding binding;
     private String channel;
-    private RequestQueue requestQueue;
+//    private RequestQueue requestQueue;
     private Toast toast;
 
     @Override
@@ -105,14 +98,15 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
             }
             case "favorites": {
                 binding.tvTitleSort.setText("Favoritos");
-                int intent_id_user = Login.intent_id_user;
                 favoritesLists = new ArrayList<>();
+//                int intent_id_user = Login.intent_id_user;
 
                 loadRecycler();
 
-                requestQueue = Volley.newRequestQueue(this);
-                JsonArrayRequest jsonArrayRequest = getProductFavorites(intent_id_user);
-                requestQueue.add(jsonArrayRequest);
+//                requestQueue = Volley.newRequestQueue(this);
+//                JsonArrayRequest jsonArrayRequest = getProductFavorites(intent_id_user);
+//                requestQueue.add(jsonArrayRequest);
+
                 break;
             }
         }
@@ -198,14 +192,20 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.register:
-                Intent intent = new Intent(this, Login.class);
-                startActivity(intent);
+//                Intent intent = new Intent(this, Login.class);
+//                startActivity(intent);
+                if (toast != null) toast.cancel();
+                toast = Toast.makeText(this, "No disponible.", Toast.LENGTH_SHORT);
+                toast.show();
                 return true;
             case R.id.contact:
                 acceptContact();
                 return true;
             case R.id.web:
-                acceptWeb();
+//                acceptWeb();
+                if (toast != null) toast.cancel();
+                toast = Toast.makeText(this, "No disponible.", Toast.LENGTH_SHORT);
+                toast.show();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -234,17 +234,17 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
      * going to web "De la huerta a la mesa" after pressing web
      */
     private void acceptWeb() {
-//        AlertDialog alertDialog = new AlertDialog
-//                .Builder(this)
-//                .setPositiveButton("Sí, continuar", (dialog, which) -> {
-//                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://granped.es/webhuertamesa"));
-//                    startActivity(intent);
-//                })
-//                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
-//                .setTitle("Confirmar")
-//                .setMessage("¿Quieres ir a la web \n\"De la huerta a la mesa\"?")
-//                .create();
-//        alertDialog.show();
+        AlertDialog alertDialog = new AlertDialog
+                .Builder(this)
+                .setPositiveButton("Sí, continuar", (dialog, which) -> {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://granped.es/webhuertamesa"));
+                    startActivity(intent);
+                })
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .setTitle("Confirmar")
+                .setMessage("¿Quieres ir a la web \n\"De la huerta a la mesa\"?")
+                .create();
+        alertDialog.show();
     }
 
     /**
@@ -346,9 +346,8 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
 //        return jsArrayRequest;
 //    }
 
-
     /**
-     * PRUEBA
+     * LOCAL
      */
     private void getProductFruits() {
         try {
@@ -362,7 +361,7 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
                 JSONObject product = jsonArray.getJSONObject(i);
 
                 int aux_id_product = product.getInt("id_product");
-                if (aux_id_product <= FRUITS_SPLIT_VEGETABLES) { // Filtra los productos por el mes seleccionado
+                if (aux_id_product <= FRUITS_SPLIT_VEGETABLES) { // Filtra entre frutas id<=49 verduras
                     int id_product = product.getInt("id_product");
                     String name_picture = product.getString("name_product");
                     String name_product = product.getString("name_product");
@@ -468,7 +467,7 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
 //    }
 
     /**
-     * PRUEBA
+     * LOCAL
      */
     private void getProductVegetables() {
         try {
@@ -482,7 +481,7 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
                 JSONObject product = jsonArray.getJSONObject(i);
 
                 int aux_id_product = product.getInt("id_product");
-                if (aux_id_product >= FRUITS_SPLIT_VEGETABLES) { // Filtra los productos por el mes seleccionado
+                if (aux_id_product >= FRUITS_SPLIT_VEGETABLES) {
                     int id_product = product.getInt("id_product");
                     String name_picture = product.getString("name_product");
                     String name_product = product.getString("name_product");
@@ -518,58 +517,68 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
      * Make the query with the server,
      * get all products favorites to a user
      *
-     * @param id_user
+//     * @param id_user
      * @return
      */
-    private JsonArrayRequest getProductFavorites(int id_user) {
-        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(
-                Request.Method.GET,
-                "https://granped.es/huertamesa/products/ProductsFavoritesIdUser.php?id_user=" + id_user,
-                null,
-                response -> {
-                    if (response != null) {
-                        response.toString();
-                        try {
-                            int numContact = response.length();
-                            for (int i = 0; i < numContact; i++) {
-                                JSONObject product = response.getJSONObject(i);
+//    private JsonArrayRequest getProductFavorites(int id_user) {
+//        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(
+//                Request.Method.GET,
+//                "https://granped.es/huertamesa/products/ProductsFavoritesIdUser.php?id_user=" + id_user,
+//                null,
+//                response -> {
+//                    if (response != null) {
+//                        response.toString();
+//                        try {
+//                            int numContact = response.length();
+//                            for (int i = 0; i < numContact; i++) {
+//                                JSONObject product = response.getJSONObject(i);
+//
+//                                int id_product = Integer.parseInt(product.getString("id_product"));
+//                                String name_picture = product.getString("name_picture");
+//                                String name_product = product.getString("name_product");
+//                                String submit = product.getString("submit");
+//                                String properties = product.getString("properties");
+//                                String production = product.getString("production");
+//                                String curiosities = product.getString("curiosities");
+//
+//                                ListProductsMainActivity element = new ListProductsMainActivity(
+//                                        id_product,
+//                                        name_picture,
+//                                        name_product,
+//                                        submit,
+//                                        properties,
+//                                        production,
+//                                        curiosities,
+//                                        getResources().getIdentifier(name_picture + "", "drawable", getApplicationContext().getPackageName())
+//                                );
+//
+//                                favoritesLists.add(element);
+//                                listAdapterMainActivity.notifyItemInserted(favoritesLists.size());
+//                            }
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                },
+//                error -> Log.d("ErrorVolley", "Error Respuesta en JSON: " + error.getMessage())
+//        ) {
+//            @Override
+//            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
+//                int mStatusCode = response.statusCode;
+//                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
+//                return super.parseNetworkResponse(response);
+//            }
+//        };
+//        return jsArrayRequest;
+//    }
+    /**
+     * LOCAL favorites
+     */
 
-                                int id_product = Integer.parseInt(product.getString("id_product"));
-                                String name_picture = product.getString("name_picture");
-                                String name_product = product.getString("name_product");
-                                String submit = product.getString("submit");
-                                String properties = product.getString("properties");
-                                String production = product.getString("production");
-                                String curiosities = product.getString("curiosities");
 
-                                ListProductsMainActivity element = new ListProductsMainActivity(
-                                        id_product,
-                                        name_picture,
-                                        name_product,
-                                        submit,
-                                        properties,
-                                        production,
-                                        curiosities,
-                                        getResources().getIdentifier(name_picture + "", "drawable", getApplicationContext().getPackageName())
-                                );
 
-                                favoritesLists.add(element);
-                                listAdapterMainActivity.notifyItemInserted(favoritesLists.size());
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                },
-                error -> Log.d("ErrorVolley", "Error Respuesta en JSON: " + error.getMessage())
-        ) {
-            @Override
-            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
-                int mStatusCode = response.statusCode;
-                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
-                return super.parseNetworkResponse(response);
-            }
-        };
-        return jsArrayRequest;
-    }
+
+
+
+
 }

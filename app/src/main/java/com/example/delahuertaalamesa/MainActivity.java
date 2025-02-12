@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Bundle extras = getIntent().getExtras();
             channel = extras.getString("channel");
             //if received from login shows alertGifFavorite
-            if (channel.equalsIgnoreCase("login")) alertGifFavorite();
+//            if (channel.equalsIgnoreCase("login")) alertGifFavorite();
 
         } catch (Exception e) {
             Log.d("canalERROR", "Se ha producido una excepción genérica");
@@ -122,66 +122,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //    }
 
     /**
-     * PRUEBA
+     * LOCAL
      */
-//    private void loadProducts() {
-//        try {
-//            productsMonth = new ArrayList<>();
-//
-//            // Leer el archivo JSON de assets
-//            String json = loadJSONFromAsset("products.json");
-//            JSONArray jsonArray = new JSONArray(json);
-//
-//            for (int i = 0; i < jsonArray.length(); i++) {
-//                JSONObject product = jsonArray.getJSONObject(i);
-//
-//                int id_month_product = product.getInt("id_month");
-//                if (id_month_product == indexmonth) { // Filtra los productos por el mes seleccionado
-//                    int id_product = product.getInt("id_product");
-//                    String name_picture = product.getString("name_picture");
-//                    String name_product = product.getString("name_product");
-//                    String submit = product.getString("submit");
-//                    String properties = product.getString("properties");
-//                    String production = product.getString("production");
-//                    String curiosities = product.getString("curiosities");
-//
-//                    ListProductsMainActivity element = new ListProductsMainActivity(
-//                            id_product,
-//                            name_picture,
-//                            name_product,
-//                            submit,
-//                            properties,
-//                            production,
-//                            curiosities,
-//                            getResources().getIdentifier(name_picture, "drawable", getApplicationContext().getPackageName())
-//                    );
-//
-//                    productsMonth.add(element);
-//                }
-//            }
-//
-//            loadRecycler(); // Cargar RecyclerView con los datos
-//
-//        } catch (Exception e) {
-//            Log.d("canalERROR", "Error al cargar productos desde archivo local");
-//            Log.d("canalERROR", Util.PrintEx(e));
-//        }
-//    }
-//
-//    private String loadJSONFromAsset(String filename) {
-//        String json = null;
-//        try {
-//            InputStream is = getAssets().open(filename);
-//            int size = is.available();
-//            byte[] buffer = new byte[size];
-//            is.read(buffer);
-//            is.close();
-//            json = new String(buffer, "UTF-8");
-//        } catch (IOException e) {
-//            Log.e("JSON Load Error", "Error al leer el archivo JSON", e);
-//        }
-//        return json;
-//    }
     private void loadProducts() {
         try {
             productsMonth = new ArrayList<>();
@@ -241,7 +183,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
     private Map<String, List<String>> loadSeasons() {
         Map<String, List<String>> productSeasons = new HashMap<>();
         try {
@@ -266,7 +207,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-
     private String loadJSONFromAsset(String filename) {
         String json = null;
         try {
@@ -282,10 +222,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         return json;
     }
-
-
-
-
 
     /**
      * Load recyclerView
@@ -334,14 +270,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.register:
-                Intent intent = new Intent(this, Login.class);
-                startActivity(intent);
+//                Intent intent = new Intent(this, Login.class);
+//                startActivity(intent);
+                if (toast != null) toast.cancel();
+                toast = Toast.makeText(this, "No disponible.", Toast.LENGTH_SHORT);
+                toast.show();
                 return true;
             case R.id.contact:
                 acceptContact();
                 return true;
                 case R.id.web:
-                acceptWeb();
+//                acceptWeb();
+                    if (toast != null) toast.cancel();
+                    toast = Toast.makeText(this, "No disponible.", Toast.LENGTH_SHORT);
+                    toast.show();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

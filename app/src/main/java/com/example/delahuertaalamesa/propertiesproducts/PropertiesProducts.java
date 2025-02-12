@@ -22,7 +22,6 @@ import androidx.cardview.widget.CardView;
 
 import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -48,10 +47,10 @@ import java.util.List;
 public class PropertiesProducts extends AppCompatActivity implements View.OnClickListener {
     private ActivityPropertiesProductsBinding binding;
     private int id_product;
-    private int id_user;
+//    private int id_user;
     private List<Favorites> favoritesUserList;
     private List<Integer> monthsProduct;
-    private RequestQueue requestQueue;
+//    private RequestQueue requestQueue;
     private Toast toast;
 
     @Override
@@ -72,7 +71,7 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
             // get id_user and id_product
             Bundle extras = getIntent().getExtras();
             id_product = extras.getInt("id");
-            id_user = Login.intent_id_user;
+//            id_user = Login.intent_id_user;
 
             // load components
             loadMenuToolBar();
@@ -90,46 +89,94 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
             ImageView on = findViewById(R.id.img_favorites_on);
             ImageView off = findViewById(R.id.img_favorites_off);
 
-            if (Login.login) {
-                off.setVisibility(View.VISIBLE);
+            off.setVisibility(View.VISIBLE);
 
-                // method call for web service
-                favoritesUserList = new ArrayList<>();
-                JsonArrayRequest jsonArrayRequest2 = getFavoritesUserID(Login.intent_id_user);
-                requestQueue.add(jsonArrayRequest2);
-            }
 
-            // add product to favorites
-            off.setOnClickListener(v -> {
-                off.setVisibility(View.INVISIBLE);
-                on.setVisibility(View.VISIBLE);
+//            if (Login.login) {
+//                off.setVisibility(View.VISIBLE);
+//
+//                // method call for web service
+//                favoritesUserList = new ArrayList<>();
+//                JsonArrayRequest jsonArrayRequest2 = getFavoritesUserID(Login.intent_id_user);
+//                requestQueue.add(jsonArrayRequest2);
+//            }
+//
+//            // add product to favorites
+//            off.setOnClickListener(v -> {
+//                off.setVisibility(View.INVISIBLE);
+//                on.setVisibility(View.VISIBLE);
+//
+//                JsonObjectRequest jsonObjectRequest3 = addFavorite(new Favorites(id_product, id_user));
+//                requestQueue.add(jsonObjectRequest3);
+//
+//                if (toast != null) toast.cancel();
+//                toast = Toast.makeText(PropertiesProducts.this, "Añadido a favoritos", Toast.LENGTH_SHORT);
+//                toast.show();
+//            });
+//
+//            // delete product from favorite
+//            on.setOnClickListener(v -> {
+//                off.setVisibility(View.VISIBLE);
+//                on.setVisibility(View.INVISIBLE);
+//
+//                JsonObjectRequest jsonObjectRequest2 = deleteFavoriteProductID(id_product, id_user);
+//                requestQueue.add(jsonObjectRequest2);
+//
+//                if (toast != null) toast.cancel();
+//                toast = Toast.makeText(PropertiesProducts.this, "Eliminado de favoritos", Toast.LENGTH_SHORT);
+//                toast.show();
+//            });
+            /**
+             * LOCAL favorites
+             */
 
-                JsonObjectRequest jsonObjectRequest3 = addFavorite(new Favorites(id_product, id_user));
-                requestQueue.add(jsonObjectRequest3);
-
-                if (toast != null) toast.cancel();
-                toast = Toast.makeText(PropertiesProducts.this, "Añadido a favoritos", Toast.LENGTH_SHORT);
-                toast.show();
-            });
-
-            // delete product from favorite
-            on.setOnClickListener(v -> {
-                off.setVisibility(View.VISIBLE);
-                on.setVisibility(View.INVISIBLE);
-
-                JsonObjectRequest jsonObjectRequest2 = deleteFavoriteProductID(id_product, id_user);
-                requestQueue.add(jsonObjectRequest2);
-
-                if (toast != null) toast.cancel();
-                toast = Toast.makeText(PropertiesProducts.this, "Eliminado de favoritos", Toast.LENGTH_SHORT);
-                toast.show();
-            });
 
         } catch (Exception e) {
             Log.d("canalERROR", "Se ha producido una excepción genérica");
             Log.d("canalERROR", Util.PrintEx(e));
         }
     }
+
+    /**
+     * LOCAL favorites
+     */
+
+
+
+//    private void addFavoriteToFile(Context context, Favorites favorite) {
+//        String json = readFavoritesFile(context);
+//
+//        try {
+//            JSONArray jsonArray = new JSONArray(json.isEmpty() ? "[]" : json);
+//            JSONObject newFavorite = new JSONObject();
+//            newFavorite.put("id_product", favorite.getId_product());
+//            jsonArray.put(newFavorite);
+//
+//            writeFavoritesFile(context, jsonArray.toString());
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//    private void removeFavoriteFromFile(Context context, int idProduct) {
+//        String json = readFavoritesFile(context);
+//
+//        try {
+//            JSONArray jsonArray = new JSONArray(json);
+//            JSONArray newArray = new JSONArray();
+//
+//            for (int i = 0; i < jsonArray.length(); i++) {
+//                JSONObject obj = jsonArray.getJSONObject(i);
+//                if (obj.getInt("id_product") != idProduct) {
+//                    newArray.put(obj);
+//                }
+//            }
+//
+//            writeFavoritesFile(context, newArray.toString());
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
 
     /**
      * Performs the query to the web service
@@ -213,14 +260,20 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.register:
-                Intent intent = new Intent(this, Login.class);
-                startActivity(intent);
+//                Intent intent = new Intent(this, Login.class);
+//                startActivity(intent);
+                if (toast != null) toast.cancel();
+                toast = Toast.makeText(this, "No disponible.", Toast.LENGTH_SHORT);
+                toast.show();
                 return true;
             case R.id.contact:
                 acceptContact();
                 return true;
             case R.id.web:
-                acceptWeb();
+//                acceptWeb();
+                if (toast != null) toast.cancel();
+                toast = Toast.makeText(this, "No disponible.", Toast.LENGTH_SHORT);
+                toast.show();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -347,7 +400,7 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
 //    }
 
     /**
-     * PRUEBA
+     * LOCAL
      */
     private void getMonthsProductID(int id_product) {
         try {
@@ -445,7 +498,7 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
 //    }
 
     /**
-     * PRUEBA
+     * LOCAL
      */
 
     private void getProductID(int id_product) {
