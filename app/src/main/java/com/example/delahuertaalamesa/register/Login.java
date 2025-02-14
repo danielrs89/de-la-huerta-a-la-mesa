@@ -43,7 +43,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
     private ActivityLoginBinding binding;
     public static int intent_id_user;
     private String name_user;
-    public static boolean login = true;
+    public static boolean login = false;
     private EditText et_nameUser, et_passwordUser;
     private Button btn_login, btn_register, btn_closedSession;
     private TextView tv_textHeadRegister, tv_textBodyRegister, tv_startLogin;

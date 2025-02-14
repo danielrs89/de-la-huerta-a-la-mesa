@@ -27,7 +27,6 @@ import com.example.delahuertaalamesa.databinding.ActivityMainBinding;
 import com.example.delahuertaalamesa.propertiesproducts.PropertiesProducts;
 import com.example.delahuertaalamesa.recyclerviewMainActivity.ListAdapterMainActivity;
 import com.example.delahuertaalamesa.recyclerviewMainActivity.ListProductsMainActivity;
-import com.example.delahuertaalamesa.register.Login;
 import com.example.delahuertaalamesa.sortViewsProducts.SortViewsProducts;
 import com.example.delahuertaalamesa.tools.ItemClickSupport;
 import com.example.delahuertaalamesa.tools.Util;
@@ -347,15 +346,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             }
             case R.id.img_sortFavorites: {
-                if (Login.login) {
-                    Intent intent = new Intent(this, SortViewsProducts.class);
-                    intent.putExtra("channel", "favorites");
-                    startActivity(intent);
-                } else {
-                    if (toast != null) toast.cancel();
-                    toast = Toast.makeText(this, "Registro necesario", Toast.LENGTH_SHORT);
-                    toast.show();
-                }
+//                if (Login.login) {
+//                    Intent intent = new Intent(this, SortViewsProducts.class);
+//                    intent.putExtra("channel", "favorites");
+//                    startActivity(intent);
+//                } else {
+//                    if (toast != null) toast.cancel();
+//                    toast = Toast.makeText(this, "Registro necesario", Toast.LENGTH_SHORT);
+//                    toast.show();
+//                }
+                Intent intent = new Intent(this, SortViewsProducts.class);
+                intent.putExtra("channel", "favorites");
+                startActivity(intent);
                 break;
             }
         }

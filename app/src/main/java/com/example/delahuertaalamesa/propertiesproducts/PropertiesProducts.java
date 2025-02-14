@@ -1,9 +1,11 @@
 package com.example.delahuertaalamesa.propertiesproducts;
 
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -20,16 +22,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 
-import com.android.volley.NetworkResponse;
-import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.bumptech.glide.Glide;
 import com.example.delahuertaalamesa.MainActivity;
 import com.example.delahuertaalamesa.R;
 import com.example.delahuertaalamesa.databinding.ActivityPropertiesProductsBinding;
-import com.example.delahuertaalamesa.register.Login;
+import com.example.delahuertaalamesa.recyclerviewMainActivity.ListProductsMainActivity;
 import com.example.delahuertaalamesa.sortViewsProducts.Favorites;
 import com.example.delahuertaalamesa.sortViewsProducts.SortViewsProducts;
 import com.example.delahuertaalamesa.tools.Util;
@@ -38,11 +35,18 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PropertiesProducts extends AppCompatActivity implements View.OnClickListener {
     private ActivityPropertiesProductsBinding binding;
@@ -89,7 +93,7 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
             ImageView on = findViewById(R.id.img_favorites_on);
             ImageView off = findViewById(R.id.img_favorites_off);
 
-            off.setVisibility(View.VISIBLE);
+
 
 
 //            if (Login.login) {
@@ -129,6 +133,40 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
             /**
              * LOCAL favorites
              */
+
+                off.setVisibility(View.VISIBLE);
+
+                // method call for web service
+                favoritesUserList = new ArrayList<>();
+                getFavoritesUserID(this);
+
+
+
+            // add product to favorites
+            off.setOnClickListener(v -> {
+                off.setVisibility(View.INVISIBLE);
+                on.setVisibility(View.VISIBLE);
+                addFavorite(id_product,this);
+
+
+                if (toast != null) toast.cancel();
+                toast = Toast.makeText(PropertiesProducts.this, "Añadido a favoritos", Toast.LENGTH_SHORT);
+                toast.show();
+            });
+
+            // delete product from favorite
+            on.setOnClickListener(v -> {
+                off.setVisibility(View.VISIBLE);
+                on.setVisibility(View.INVISIBLE);
+
+                deleteFavoriteProductID(id_product, this);
+
+
+                if (toast != null) toast.cancel();
+                toast = Toast.makeText(PropertiesProducts.this, "Eliminado de favoritos", Toast.LENGTH_SHORT);
+                toast.show();
+            });
+
 
 
         } catch (Exception e) {
@@ -343,15 +381,18 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
                 break;
             }
             case R.id.img_sortFavorites: {
-                if (Login.login) {
-                    Intent intent = new Intent(PropertiesProducts.this, SortViewsProducts.class);
-                    intent.putExtra("channel", "favorites");
-                    startActivity(intent);
-                } else {
-                    if (toast != null) toast.cancel();
-                    toast = Toast.makeText(this, "Registro necesario", Toast.LENGTH_SHORT);
-                    toast.show();
-                }
+//                if (Login.login) {
+//                    Intent intent = new Intent(PropertiesProducts.this, SortViewsProducts.class);
+//                    intent.putExtra("channel", "favorites");
+//                    startActivity(intent);
+//                } else {
+//                    if (toast != null) toast.cancel();
+//                    toast = Toast.makeText(this, "Registro necesario", Toast.LENGTH_SHORT);
+//                    toast.show();
+//                }
+                Intent intent = new Intent(PropertiesProducts.this, SortViewsProducts.class);
+                intent.putExtra("channel", "favorites");
+                startActivity(intent);
                 break;
             }
         }
@@ -400,7 +441,7 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
 //    }
 
     /**
-     * LOCAL
+     * LOCAL getMeses_deun_productID
      */
     private void getMonthsProductID(int id_product) {
         try {
@@ -612,42 +653,117 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
      * Performs the query to the web service,
      * get a user's favorite products
      */
-    private JsonArrayRequest getFavoritesUserID(int id_user) {
-        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(
-                Request.Method.GET,
-                "https://granped.es/huertamesa/favorite/FavoriteLogic.php?id_user=" + id_user,
-                null,
-                response -> {
-                    if (response != null) {
-                        response.toString();
-                        try {
-                            int numContact = response.length();
-                            for (int i = 0; i < numContact; i++) {
-                                JSONObject product = response.getJSONObject(i);
+//    private JsonArrayRequest getFavoritesUserID(int id_user) {
+//        JsonArrayRequest jsArrayRequest = new JsonArrayRequest(
+//                Request.Method.GET,
+//                "https://granped.es/huertamesa/favorite/FavoriteLogic.php?id_user=" + id_user,
+//                null,
+//                response -> {
+//                    if (response != null) {
+//                        response.toString();
+//                        try {
+//                            int numContact = response.length();
+//                            for (int i = 0; i < numContact; i++) {
+//                                JSONObject product = response.getJSONObject(i);
+//
+//                                int id_product2 = Integer.parseInt(product.getString("id_product"));
+//                                int id_user2 = Integer.parseInt(product.getString("id_user"));
+//
+//                                Favorites favorite = new Favorites(id_product2, id_user2);
+//
+//                                favoritesUserList.add(favorite);
+//                                favorite(id_product, favoritesUserList.get(i).getId_product());
+//                            }
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                },
+//                error -> Log.d("canalError", "Error Respuesta en JSON: " + error.getMessage())
+//        ) {
+//            @Override
+//            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
+//                int mStatusCode = response.statusCode;
+//                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
+//                return super.parseNetworkResponse(response);
+//            }
+//        };
+//        return jsArrayRequest;
+//    }
+    /**
+     * LOCAL getFavorites
+     */
+    private List<ListProductsMainActivity> getFavoritesUserID(Context context) {
+        List<ListProductsMainActivity> favoriteProducts = new ArrayList<>();
 
-                                int id_product2 = Integer.parseInt(product.getString("id_product"));
-                                int id_user2 = Integer.parseInt(product.getString("id_user"));
-
-                                Favorites favorite = new Favorites(id_product2, id_user2);
-
-                                favoritesUserList.add(favorite);
-                                favorite(id_product, favoritesUserList.get(i).getId_product());
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                },
-                error -> Log.d("canalError", "Error Respuesta en JSON: " + error.getMessage())
-        ) {
-            @Override
-            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
-                int mStatusCode = response.statusCode;
-                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
-                return super.parseNetworkResponse(response);
+        try {
+            // Cargar los IDs de productos favoritos desde favorite.json
+            File favoriteFile = new File(context.getFilesDir(), "favorite.json");
+            if (!favoriteFile.exists()) {
+                Log.d("Favorites", "No hay favoritos guardados");
+                if (toast != null) toast.cancel();
+                toast = Toast.makeText(this, "No hay favoritos guardados.", Toast.LENGTH_SHORT);
+                toast.show();
+                return favoriteProducts;
             }
-        };
-        return jsArrayRequest;
+
+            String favoriteContent = null;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                favoriteContent = new String(Files.readAllBytes(favoriteFile.toPath()), StandardCharsets.UTF_8);
+            }
+            JSONArray favoriteArray = new JSONArray(favoriteContent);
+
+            Set<Integer> favoriteIds = new HashSet<>();
+            for (int i = 0; i < favoriteArray.length(); i++) {
+                favoriteIds.add(favoriteArray.getJSONObject(i).getInt("id_product"));
+            }
+
+            // Cargar todos los productos desde products.json
+            File productsFile = new File(context.getFilesDir(), "products.json");
+            if (!productsFile.exists()) {
+                Log.d("Products", "No hay productos guardados");
+                return favoriteProducts;
+            }
+
+            String productsContent = null;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                productsContent = new String(Files.readAllBytes(productsFile.toPath()), StandardCharsets.UTF_8);
+            }
+            JSONArray productsArray = new JSONArray(productsContent);
+
+            // Filtrar solo los productos que están en favoritos
+            for (int i = 0; i < productsArray.length(); i++) {
+                JSONObject product = productsArray.getJSONObject(i);
+                int id_product = product.getInt("id_product");
+
+                if (favoriteIds.contains(id_product)) {
+                    String name_picture = product.getString("name_picture");
+                    String name_product = product.getString("name_product");
+                    String submit = product.getString("submit");
+                    String properties = product.getString("properties");
+                    String production = product.getString("production");
+                    String curiosities = product.getString("curiosities");
+
+                    ListProductsMainActivity element = new ListProductsMainActivity(
+                            id_product,
+                            name_picture,
+                            name_product,
+                            submit,
+                            properties,
+                            production,
+                            curiosities,
+                            context.getResources().getIdentifier(name_picture, "drawable", context.getPackageName())
+                    );
+
+                    favoriteProducts.add(element);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("Favorites", "Error al cargar productos favoritos: " + e.getMessage());
+        }
+
+        return favoriteProducts;
     }
 
     /**
@@ -671,58 +787,164 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
      * add product to favorite,
      * used POST
      */
-    private JsonObjectRequest addFavorite(Favorites favorite) {
-        JSONObject objet = new JSONObject();
+//    private JsonObjectRequest addFavorite(Favorites favorite) {
+//        JSONObject objet = new JSONObject();
+//
+//        try {
+//            objet.put("id_product", favorite.getId_product());
+//            objet.put("id_user", favorite.getId_user());
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//
+//        JsonObjectRequest jsObjectRequest = new JsonObjectRequest(
+//                Request.Method.POST,
+//                "https://granped.es/huertamesa/favorite/FavoriteLogic.php",
+//                objet,
+//                response -> {
+//                },
+//                error -> Log.d("canalError", "Error Respuesta en JSON: " + error.getMessage())
+//        ) {
+//            @Override
+//            protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
+//                int mStatusCode = response.statusCode;
+//                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
+//                return super.parseNetworkResponse(response);
+//            }
+//        };
+//        return jsObjectRequest;
+//    }
+/**
+ * LOCAL addFavorites
+ */
+private void addFavorite(Integer id_product, Context context) {
+    try {
+        // Crear un objeto File que apunta al archivo favorite.json en el almacenamiento interno
+        File file = new File(context.getFilesDir(), "favorite.json");
+        JSONArray favoritesArray;
 
-        try {
-            objet.put("id_product", favorite.getId_product());
-            objet.put("id_user", favorite.getId_user());
-        } catch (JSONException e) {
-            e.printStackTrace();
+        // Verificar si el archivo existe y leer su contenido si es así
+        if (file.exists()) {
+            StringBuilder stringBuilder = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    stringBuilder.append(line);
+                }
+            }
+            String content = stringBuilder.toString();
+            favoritesArray = new JSONArray(content); // Convertir el contenido en un JSONArray
+        } else {
+            favoritesArray = new JSONArray(); // Si no existe, crear un nuevo JSONArray vacío
         }
 
-        JsonObjectRequest jsObjectRequest = new JsonObjectRequest(
-                Request.Method.POST,
-                "https://granped.es/huertamesa/favorite/FavoriteLogic.php",
-                objet,
-                response -> {
-                },
-                error -> Log.d("canalError", "Error Respuesta en JSON: " + error.getMessage())
-        ) {
-            @Override
-            protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
-                int mStatusCode = response.statusCode;
-                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
-                return super.parseNetworkResponse(response);
+        // Crear un objeto JSON para almacenar el ID del producto (sin el usuario)
+        JSONObject objet = new JSONObject();
+        objet.put("id_product", id_product);
+
+        // Verificar si el producto ya está en la lista de favoritos
+        boolean exists = false;
+        for (int i = 0; i < favoritesArray.length(); i++) {
+            if (favoritesArray.getJSONObject(i).getInt("id_product") == id_product) {
+                exists = true; // Si el producto ya está, marcarlo como existente
+                break;
             }
-        };
-        return jsObjectRequest;
+        }
+
+        if (!exists) { // Si el producto no está en la lista, agregarlo
+            favoritesArray.put(objet);
+
+            // Escribir la lista actualizada de favoritos en el archivo
+            try (FileWriter writer = new FileWriter(file)) {
+                writer.write(favoritesArray.toString());
+            }
+
+            Log.d("Favorites", "Producto añadido a favoritos");
+        } else {
+            Log.d("Favorites", "El producto ya está en favoritos");
+        }
+    } catch (Exception e) { // Capturar cualquier error durante el proceso
+        e.printStackTrace();
+        Log.e("Favorites", "Error al añadir a favoritos: " + e.getMessage());
     }
+}
 
     /**
      * Performs the query to the web service,
      * delete product to favorite,
      * used DELETE
      */
-    private JsonObjectRequest deleteFavoriteProductID(int id_product, int id_user) {
-        JsonObjectRequest jsArrayRequest = new JsonObjectRequest(
-                Request.Method.DELETE,
-                "https://granped.es/huertamesa/favorite/FavoriteLogic.php?id_product=" + id_product + "&id_user=" + id_user,
-                null,
-                response -> {
-                    if (response != null) {
-                        response.toString();
-                    }
-                },
-                error -> Log.d("canalError", "Error Respuesta en JSON: " + error.getMessage())
-        ) {
-            @Override
-            protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
-                int mStatusCode = response.statusCode;
-                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
-                return super.parseNetworkResponse(response);
+//    private JsonObjectRequest deleteFavoriteProductID(int id_product, int id_user) {
+//        JsonObjectRequest jsArrayRequest = new JsonObjectRequest(
+//                Request.Method.DELETE,
+//                "https://granped.es/huertamesa/favorite/FavoriteLogic.php?id_product=" + id_product + "&id_user=" + id_user,
+//                null,
+//                response -> {
+//                    if (response != null) {
+//                        response.toString();
+//                    }
+//                },
+//                error -> Log.d("canalError", "Error Respuesta en JSON: " + error.getMessage())
+//        ) {
+//            @Override
+//            protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
+//                int mStatusCode = response.statusCode;
+//                Log.d("VolleyResponseCode", String.valueOf(mStatusCode));
+//                return super.parseNetworkResponse(response);
+//            }
+//        };
+//        return jsArrayRequest;
+//    }
+
+    /**
+     * LOCAL deleteFavorites
+     */
+    private void deleteFavoriteProductID(Integer id_product, Context context) {
+        try {
+            // Crear un objeto File que apunta al archivo favorite.json en el almacenamiento interno
+            File file = new File(context.getFilesDir(), "favorite.json");
+
+            // Verificar si el archivo existe
+            if (!file.exists()) {
+                Log.d("Favorites", "No hay favoritos para eliminar");
+                return; // Si el archivo no existe, no hay nada que eliminar
             }
-        };
-        return jsArrayRequest;
+
+            // Leer el contenido del archivo
+            StringBuilder stringBuilder = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    stringBuilder.append(line);
+                }
+            }
+            String content = stringBuilder.toString();
+            JSONArray favoritesArray = new JSONArray(content); // Convertir el contenido en un JSONArray
+
+            // Buscar el producto en la lista de favoritos
+            boolean removed = false;
+            for (int i = 0; i < favoritesArray.length(); i++) {
+                if (favoritesArray.getJSONObject(i).getInt("id_product") == id_product) {
+                    favoritesArray.remove(i); // Eliminar el producto si se encuentra
+                    removed = true;
+                    break;
+                }
+            }
+
+            if (removed) {
+                // Escribir la lista actualizada de favoritos en el archivo
+                try (FileWriter writer = new FileWriter(file)) { // El paréntesis extra ha sido eliminado
+                    writer.write(favoritesArray.toString());
+                }
+
+
+                Log.d("Favorites", "Producto eliminado de favoritos");
+            } else {
+                Log.d("Favorites", "El producto no estaba en favoritos");
+            }
+        } catch (Exception e) { // Capturar cualquier error durante el proceso
+            e.printStackTrace();
+            Log.e("Favorites", "Error al eliminar de favoritos: " + e.getMessage());
+        }
     }
 }
