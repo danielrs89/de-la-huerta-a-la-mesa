@@ -1,11 +1,10 @@
 package com.example.delahuertaalamesa.propertiesproducts;
 
 
-import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -26,7 +25,6 @@ import com.bumptech.glide.Glide;
 import com.example.delahuertaalamesa.MainActivity;
 import com.example.delahuertaalamesa.R;
 import com.example.delahuertaalamesa.databinding.ActivityPropertiesProductsBinding;
-import com.example.delahuertaalamesa.recyclerviewMainActivity.ListProductsMainActivity;
 import com.example.delahuertaalamesa.sortViewsProducts.Favorites;
 import com.example.delahuertaalamesa.sortViewsProducts.SortViewsProducts;
 import com.example.delahuertaalamesa.tools.Util;
@@ -35,26 +33,22 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class PropertiesProducts extends AppCompatActivity implements View.OnClickListener {
     private ActivityPropertiesProductsBinding binding;
     private int id_product;
-//    private int id_user;
-    private List<Favorites> favoritesUserList;
+    //    private int id_user;
+    private List<Favorites> favoritesList;
+    private List<Integer> favoritesIDList;
+
     private List<Integer> monthsProduct;
-//    private RequestQueue requestQueue;
+    private String channel;
+
+    //    private RequestQueue requestQueue;
     private Toast toast;
 
     @Override
@@ -83,6 +77,10 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
             // method call for web service
             getProduct_Months();
 
+            // classification according to the string received fruits/vegetables/favorites
+            Bundle bundle = getIntent().getExtras();
+            channel = bundle.getString("channel");
+
             // declare the menu buttons for onClick()
             binding.imgSortReturn.setOnClickListener(this);
             binding.imgSortFuits.setOnClickListener(this);
@@ -92,9 +90,6 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
             // change the layout if the user is logged in
             ImageView on = findViewById(R.id.img_favorites_on);
             ImageView off = findViewById(R.id.img_favorites_off);
-
-
-
 
 //            if (Login.login) {
 //                off.setVisibility(View.VISIBLE);
@@ -133,21 +128,21 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
             /**
              * LOCAL favorites
              */
-
-                off.setVisibility(View.VISIBLE);
-
-                // method call for web service
-                favoritesUserList = new ArrayList<>();
-                getFavoritesUserID(this);
+//            copyAssetToFile("_favorites.json", "_favorites.json");
+            off.setVisibility(View.VISIBLE);
 
 
+            JSONArray favorites = loadFavorites();
+            for (int i = 0; i < favorites.length(); i++) {
+                favorite(id_product,favorites.getJSONObject(i).getInt("id_product"));
+            }
 
             // add product to favorites
             off.setOnClickListener(v -> {
                 off.setVisibility(View.INVISIBLE);
                 on.setVisibility(View.VISIBLE);
-                addFavorite(id_product,this);
 
+                addFavorite(id_product);
 
                 if (toast != null) toast.cancel();
                 toast = Toast.makeText(PropertiesProducts.this, "Añadido a favoritos", Toast.LENGTH_SHORT);
@@ -159,8 +154,7 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
                 off.setVisibility(View.VISIBLE);
                 on.setVisibility(View.INVISIBLE);
 
-                deleteFavoriteProductID(id_product, this);
-
+                deleteFavorite(id_product);
 
                 if (toast != null) toast.cancel();
                 toast = Toast.makeText(PropertiesProducts.this, "Eliminado de favoritos", Toast.LENGTH_SHORT);
@@ -168,53 +162,10 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
             });
 
 
-
-        } catch (Exception e) {
-            Log.d("canalERROR", "Se ha producido una excepción genérica");
-            Log.d("canalERROR", Util.PrintEx(e));
+        } catch (JSONException ex) {
+            throw new RuntimeException(ex);
         }
     }
-
-    /**
-     * LOCAL favorites
-     */
-
-
-
-//    private void addFavoriteToFile(Context context, Favorites favorite) {
-//        String json = readFavoritesFile(context);
-//
-//        try {
-//            JSONArray jsonArray = new JSONArray(json.isEmpty() ? "[]" : json);
-//            JSONObject newFavorite = new JSONObject();
-//            newFavorite.put("id_product", favorite.getId_product());
-//            jsonArray.put(newFavorite);
-//
-//            writeFavoritesFile(context, jsonArray.toString());
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//    private void removeFavoriteFromFile(Context context, int idProduct) {
-//        String json = readFavoritesFile(context);
-//
-//        try {
-//            JSONArray jsonArray = new JSONArray(json);
-//            JSONArray newArray = new JSONArray();
-//
-//            for (int i = 0; i < jsonArray.length(); i++) {
-//                JSONObject obj = jsonArray.getJSONObject(i);
-//                if (obj.getInt("id_product") != idProduct) {
-//                    newArray.put(obj);
-//                }
-//            }
-//
-//            writeFavoritesFile(context, newArray.toString());
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
 
     /**
      * Performs the query to the web service
@@ -398,6 +349,24 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
         }
     }
 
+
+    /**
+     * LOCAL read file
+     */
+    private String loadJSONFromAsset(String filename) {
+        String json = null;
+        try {
+            InputStream is = getAssets().open(filename);
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            json = new String(buffer, "UTF-8");
+        } catch (IOException e) {
+            Log.e("JSON Load Error", "Error al leer el archivo JSON", e);
+        }
+        return json;
+    }
     /**
      * Performs the query to the web service,
      * the months that a product is consumed
@@ -441,21 +410,12 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
 //    }
 
     /**
-     * LOCAL getMeses_deun_productID
+     * LOCAL meses_de_un_productID
      */
     private void getMonthsProductID(int id_product) {
         try {
-            // Leer el archivo JSON desde assets
-            InputStream is = getAssets().open("season.json");
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
-
-            // Convertir a String
-            String json = new String(buffer, StandardCharsets.UTF_8);
-
-            // Convertir el JSON a un JSONArray
+            // Leer el archivo JSON de assets
+            String json = loadJSONFromAsset("season.json");
             JSONArray jsonArray = new JSONArray(json);
 
             // Asegurar que la lista no sea null y limpiarla antes de agregar datos
@@ -493,7 +453,7 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
                 season(id_month);
             }
 
-        } catch (IOException | JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
             Log.d("canalERROR", "Error al leer season.json: " + e.getMessage());
         }
@@ -539,22 +499,13 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
 //    }
 
     /**
-     * LOCAL
+     * LOCAL get_producID
      */
 
     private void getProductID(int id_product) {
         try {
-            // Leer el archivo JSON desde assets
-            InputStream is = getAssets().open("products.json");
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
-
-            // Convertir a String
-            String json = new String(buffer, StandardCharsets.UTF_8);
-
-            // Convertir el JSON a un JSONArray
+            // Leer el archivo JSON de assets
+            String json = loadJSONFromAsset("products.json");
             JSONArray jsonArray = new JSONArray(json);
 
             // Buscar el producto con el id_product
@@ -579,14 +530,14 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
             // Si no se encuentra el producto
             Log.d("ProductSearch", "Producto no encontrado");
 
-        } catch (IOException | JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-
     /**
      * CardView changes color if the product is consumed in that season
+     *
      * @param id_month
      */
     private void season(int id_month) {
@@ -690,81 +641,7 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
 //        };
 //        return jsArrayRequest;
 //    }
-    /**
-     * LOCAL getFavorites
-     */
-    private List<ListProductsMainActivity> getFavoritesUserID(Context context) {
-        List<ListProductsMainActivity> favoriteProducts = new ArrayList<>();
 
-        try {
-            // Cargar los IDs de productos favoritos desde favorite.json
-            File favoriteFile = new File(context.getFilesDir(), "favorite.json");
-            if (!favoriteFile.exists()) {
-                Log.d("Favorites", "No hay favoritos guardados");
-                if (toast != null) toast.cancel();
-                toast = Toast.makeText(this, "No hay favoritos guardados.", Toast.LENGTH_SHORT);
-                toast.show();
-                return favoriteProducts;
-            }
-
-            String favoriteContent = null;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                favoriteContent = new String(Files.readAllBytes(favoriteFile.toPath()), StandardCharsets.UTF_8);
-            }
-            JSONArray favoriteArray = new JSONArray(favoriteContent);
-
-            Set<Integer> favoriteIds = new HashSet<>();
-            for (int i = 0; i < favoriteArray.length(); i++) {
-                favoriteIds.add(favoriteArray.getJSONObject(i).getInt("id_product"));
-            }
-
-            // Cargar todos los productos desde products.json
-            File productsFile = new File(context.getFilesDir(), "products.json");
-            if (!productsFile.exists()) {
-                Log.d("Products", "No hay productos guardados");
-                return favoriteProducts;
-            }
-
-            String productsContent = null;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                productsContent = new String(Files.readAllBytes(productsFile.toPath()), StandardCharsets.UTF_8);
-            }
-            JSONArray productsArray = new JSONArray(productsContent);
-
-            // Filtrar solo los productos que están en favoritos
-            for (int i = 0; i < productsArray.length(); i++) {
-                JSONObject product = productsArray.getJSONObject(i);
-                int id_product = product.getInt("id_product");
-
-                if (favoriteIds.contains(id_product)) {
-                    String name_picture = product.getString("name_picture");
-                    String name_product = product.getString("name_product");
-                    String submit = product.getString("submit");
-                    String properties = product.getString("properties");
-                    String production = product.getString("production");
-                    String curiosities = product.getString("curiosities");
-
-                    ListProductsMainActivity element = new ListProductsMainActivity(
-                            id_product,
-                            name_picture,
-                            name_product,
-                            submit,
-                            properties,
-                            production,
-                            curiosities,
-                            context.getResources().getIdentifier(name_picture, "drawable", context.getPackageName())
-                    );
-
-                    favoriteProducts.add(element);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.e("Favorites", "Error al cargar productos favoritos: " + e.getMessage());
-        }
-
-        return favoriteProducts;
-    }
 
     /**
      * Change the img_favorites button
@@ -814,60 +691,6 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
 //        };
 //        return jsObjectRequest;
 //    }
-/**
- * LOCAL addFavorites
- */
-private void addFavorite(Integer id_product, Context context) {
-    try {
-        // Crear un objeto File que apunta al archivo favorite.json en el almacenamiento interno
-        File file = new File(context.getFilesDir(), "favorite.json");
-        JSONArray favoritesArray;
-
-        // Verificar si el archivo existe y leer su contenido si es así
-        if (file.exists()) {
-            StringBuilder stringBuilder = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    stringBuilder.append(line);
-                }
-            }
-            String content = stringBuilder.toString();
-            favoritesArray = new JSONArray(content); // Convertir el contenido en un JSONArray
-        } else {
-            favoritesArray = new JSONArray(); // Si no existe, crear un nuevo JSONArray vacío
-        }
-
-        // Crear un objeto JSON para almacenar el ID del producto (sin el usuario)
-        JSONObject objet = new JSONObject();
-        objet.put("id_product", id_product);
-
-        // Verificar si el producto ya está en la lista de favoritos
-        boolean exists = false;
-        for (int i = 0; i < favoritesArray.length(); i++) {
-            if (favoritesArray.getJSONObject(i).getInt("id_product") == id_product) {
-                exists = true; // Si el producto ya está, marcarlo como existente
-                break;
-            }
-        }
-
-        if (!exists) { // Si el producto no está en la lista, agregarlo
-            favoritesArray.put(objet);
-
-            // Escribir la lista actualizada de favoritos en el archivo
-            try (FileWriter writer = new FileWriter(file)) {
-                writer.write(favoritesArray.toString());
-            }
-
-            Log.d("Favorites", "Producto añadido a favoritos");
-        } else {
-            Log.d("Favorites", "El producto ya está en favoritos");
-        }
-    } catch (Exception e) { // Capturar cualquier error durante el proceso
-        e.printStackTrace();
-        Log.e("Favorites", "Error al añadir a favoritos: " + e.getMessage());
-    }
-}
 
     /**
      * Performs the query to the web service,
@@ -897,54 +720,79 @@ private void addFavorite(Integer id_product, Context context) {
 //    }
 
     /**
-     * LOCAL deleteFavorites
+     * Save favorites in SharedPreferences
+     * Opción sencilla y eficiente para almacenar pequeños datos en formato JSON.
      */
-    private void deleteFavoriteProductID(Integer id_product, Context context) {
+    private JSONArray loadFavorites() {
+        SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+        String json = prefs.getString("favorites", "[]"); // Si no hay datos, devuelve un array vacío
         try {
-            // Crear un objeto File que apunta al archivo favorite.json en el almacenamiento interno
-            File file = new File(context.getFilesDir(), "favorite.json");
-
-            // Verificar si el archivo existe
-            if (!file.exists()) {
-                Log.d("Favorites", "No hay favoritos para eliminar");
-                return; // Si el archivo no existe, no hay nada que eliminar
-            }
-
-            // Leer el contenido del archivo
-            StringBuilder stringBuilder = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    stringBuilder.append(line);
-                }
-            }
-            String content = stringBuilder.toString();
-            JSONArray favoritesArray = new JSONArray(content); // Convertir el contenido en un JSONArray
-
-            // Buscar el producto en la lista de favoritos
-            boolean removed = false;
-            for (int i = 0; i < favoritesArray.length(); i++) {
-                if (favoritesArray.getJSONObject(i).getInt("id_product") == id_product) {
-                    favoritesArray.remove(i); // Eliminar el producto si se encuentra
-                    removed = true;
-                    break;
-                }
-            }
-
-            if (removed) {
-                // Escribir la lista actualizada de favoritos en el archivo
-                try (FileWriter writer = new FileWriter(file)) { // El paréntesis extra ha sido eliminado
-                    writer.write(favoritesArray.toString());
-                }
-
-
-                Log.d("Favorites", "Producto eliminado de favoritos");
-            } else {
-                Log.d("Favorites", "El producto no estaba en favoritos");
-            }
-        } catch (Exception e) { // Capturar cualquier error durante el proceso
+            return new JSONArray(json);
+        } catch (JSONException e) {
             e.printStackTrace();
-            Log.e("Favorites", "Error al eliminar de favoritos: " + e.getMessage());
+            return new JSONArray(); // Devuelve vacío si hay error
         }
     }
+
+    private void saveFavorites(JSONArray favorites) {
+        SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("favorites", favorites.toString());
+        editor.apply(); // Guardar de forma asíncrona
+    }
+
+    private void addFavorite(int id_product) {
+        try {
+            JSONArray favorites = loadFavorites();
+
+            // Verificar si ya existe
+            for (int i = 0; i < favorites.length(); i++) {
+                if (favorites.getJSONObject(i).getInt("id_product") == id_product) {
+                    Log.d("addFavorite", "El producto ya está en favoritos.");
+                    return;
+                }
+            }
+
+            // Agregar nuevo producto
+            JSONObject newFavorite = new JSONObject();
+            newFavorite.put("id_product", id_product);
+            favorites.put(newFavorite);
+
+            // Guardar lista actualizada
+            saveFavorites(favorites);
+            Log.d("addFavorite", "Producto agregado a favoritos.");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void deleteFavorite(int id_product) {
+        try {
+            JSONArray favorites = loadFavorites();
+            JSONArray updatedFavorites = new JSONArray();
+            boolean found = false;
+
+            for (int i = 0; i < favorites.length(); i++) {
+                if (favorites.getJSONObject(i).getInt("id_product") == id_product) {
+                    found = true;
+                } else {
+                    updatedFavorites.put(favorites.getJSONObject(i));
+                }
+            }
+
+            if (!found) {
+                Log.d("removeFavorite", "El producto no estaba en favoritos.");
+                return;
+            }
+
+            // Guardar lista actualizada
+            saveFavorites(updatedFavorites);
+            Log.d("removeFavorite", "Producto eliminado de favoritos.");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }
+
