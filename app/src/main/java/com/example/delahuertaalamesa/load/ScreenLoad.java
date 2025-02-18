@@ -2,6 +2,8 @@ package com.example.delahuertaalamesa.load;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -10,16 +12,19 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.RotateAnimation;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.delahuertaalamesa.MainActivity;
+import com.example.delahuertaalamesa.R;
 import com.example.delahuertaalamesa.databinding.ActivityScreenLoadBinding;
 
 public class ScreenLoad extends AppCompatActivity {
     private ActivityScreenLoadBinding binding;
-    private final int TIME = 0;
-//    private final int TIME = 4500;
+//    TEST
+//    private final int TIME = 0;
+    private final int TIME = 4500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +39,20 @@ public class ScreenLoad extends AppCompatActivity {
         // int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
         // decorView.setSystemUiVisibility(uiOptions);
 
+        // get version of app
+        TextView tvInfoVersion = findViewById(R.id.tv_infoVersion);
+        tvInfoVersion.setText("v. " + getAppVersion());
+
         startAnimation();
+    }
+    private String getAppVersion() {
+        try {
+            PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            return pInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+            return "N/A"; // En caso de error
+        }
     }
 
     /**
