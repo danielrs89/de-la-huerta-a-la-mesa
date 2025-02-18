@@ -389,7 +389,7 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
                 int aux_id_product = product.getInt("id_product");
                 if (aux_id_product <= FRUITS_SPLIT_VEGETABLES) { // Filtra entre frutas id<=49 verduras
                     int id_product = product.getInt("id_product");
-                    String name_picture = product.getString("name_product");
+                    String name_picture = product.getString("name_picture");
                     String name_product = product.getString("name_product");
                     String submit = product.getString("submit");
                     String properties = product.getString("properties");
@@ -494,7 +494,7 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
                 int aux_id_product = product.getInt("id_product");
                 if (aux_id_product >= FRUITS_SPLIT_VEGETABLES) {
                     int id_product = product.getInt("id_product");
-                    String name_picture = product.getString("name_product");
+                    String name_picture = product.getString("name_picture");
                     String name_product = product.getString("name_product");
                     String submit = product.getString("submit");
                     String properties = product.getString("properties");
@@ -611,7 +611,7 @@ public class SortViewsProducts extends AppCompatActivity implements View.OnClick
 
                 // Filtrar solo los productos que están en la lista de favoritos
                 if (favoriteIds.contains(id_product)) {
-                    String name_picture = product.getString("name_product");
+                    String name_picture = product.getString("name_picture");
                     String name_product = product.getString("name_product");
 //                    String submit = product.getString("submit");
 //                    String properties = product.getString("properties");

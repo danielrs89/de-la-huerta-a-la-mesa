@@ -513,7 +513,7 @@ public class PropertiesProducts extends AppCompatActivity implements View.OnClic
                 JSONObject product = jsonArray.getJSONObject(i);
                 if (product.getInt("id_product") == id_product) {
                     // Obtener los valores
-                    String name_picture = product.getString("name_product");
+                    String name_picture = product.getString("name_picture");
                     String name_product = product.getString("name_product");
                     String submit = product.getString("submit");
                     String properties = product.getString("properties");

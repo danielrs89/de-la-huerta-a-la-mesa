@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     assert months != null;
                     if (months.contains(String.valueOf(indexmonth))) { // Check if the selected month is in the product's season
                         int id_product = Integer.parseInt(id_product_str); // Convert to int only when needed
-                        String name_picture = product.getString("name_product");
+                        String name_picture = product.getString("name_picture");
                         String name_product = product.getString("name_product");
                         String submit = product.getString("submit");
                         String properties = product.getString("properties");
