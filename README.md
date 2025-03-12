@@ -12,6 +12,6 @@ I include the installation manual, the user manual and the executable of the app
 
 Thank you.
 
-[Download APK](https://raw.githubusercontent.com/danielrs89/de-la-huerta-a-la-mesa/blob/main/huertaMesa212.apk){:target="_blank"}
+[Download APK](https://github.com/danielrs89/de-la-huerta-a-la-mesa/raw/refs/heads/main/huertaMesa212.apk)
 
 
